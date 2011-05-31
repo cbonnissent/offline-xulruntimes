@@ -1,0 +1,29 @@
+PACKAGE = @PACKAGE@
+VERSION = @VERSION@
+RELEASE = @RELEASE@
+utildir = @PUBRULE@
+pubdir = @prefix@
+srcdir = @srcdir@
+
+export pubdir utildir
+
+TAR = gtar
+GZIP_ENV = --best
+
+export targetdir PACKAGE
+
+pages_not_xml = info.xml
+pages_not_php = fam2po.php po2js.php
+
+include $(utildir)/PubRule
+
+DISTFILES += $(SUBDIR) \
+            RELEASE VERSION 
+
+$(pubdir)/programs: $(pubdir)
+	mkdir -p $(pubdir)/programs
+
+$(pubdir)/programs/xulruntimes_install: programs/xulruntimes_install $(pubdir)/programs
+	cp $< $@
+
+publish: $(pubdir)/programs/xulruntimes_install

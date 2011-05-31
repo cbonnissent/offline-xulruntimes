@@ -1,0 +1,103 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Install XUL Runtimes archive into Dynacase context dir
+ *
+ * @author Anakeen 2011
+ * @license http://www.fsf.org/licensing/licenses/agpl-3.0.html GNU Affero General Public License
+ */
+
+$WIFF_ROOT = getenv('WIFF_ROOT');
+if( $WIFF_ROOT === false ) {
+  print sprintf("WIFF_ROOT environment variable is not set!\n");
+  exit(1);
+}
+
+$WIFF_CONTEXT_ROOT = getenv('WIFF_CONTEXT_ROOT');
+if( $WIFF_CONTEXT_ROOT === false ) {
+  print sprintf("WIFF_CONTEXT_ROOT environment variable is not set!\n");
+  exit(1);
+}
+
+set_include_path(get_include_path().PATH_SEPARATOR.$WIFF_ROOT.PATH_SEPARATOR."$WIFF_ROOT/include");
+
+include_once('WHAT/Lib.System.php');
+
+$xulruntimes_tgz = $argv[1];
+if( $xulruntimes_tgz === null ) {
+  print sprintf("Missing XUL Runtimes archive argument\n");
+  exit(1);
+}
+$xulruntimes_tgz = realpath($xulruntimes_tgz);
+if( ! is_file($xulruntimes_tgz) ) {
+  print sprintf("XUL Runtimes archive not found at '%s'\n", $xulruntimes_tgz);
+  exit(1);
+}
+
+$tmpfile = LibSystem::tempnam(null, 'xulruntimes_unpack');
+if( $tmpfile === false ) {
+  print sprintf("Could not create temporary file\n");
+  exit(1);
+}
+
+$tempdir = basename($tmpfile);
+$ret = mkdir($tempdir);
+if( $ret === false ) {
+  print sprintf("Could not create temporary directory '%s'\n", $tempdir);
+  @unlink($tmpfile);
+  exit(1);
+}
+
+$ret = false;
+
+// Unpack archive in tempdir
+$cmd = sprintf('tar -C %s -zxf %s > %s 2>&1', escapeshellarg($tempdir), escapeshellarg($xulruntimes_tgz), escapeshellarg($tmpfile));
+system($cmd, $ret);
+$output = file_get_contents($tmpfile);
+@unlink($tmpfile);
+
+if( $ret !== 0 ) {
+  print sprintf("Error tar -C %s -zxf %s\n", escapeshellarg($tempdir), escapeshellarg($xulruntimes_tgz));
+  exit(1);
+}
+
+// Remove old dynacase-offline-xulruntimes
+if( is_dir('dynacase-offline-xulruntimes') ) {
+  $cmd = 'rm -Rf dynacase-offline-xulruntimes';
+  system($cmd, $ret);
+  if( $ret !== 0 ) {
+    print sprintf("Error erasing 'dynacase-offline-xulruntimes'\n");
+    exit(1);
+  }
+}
+
+// Move temp files into dynacase-offline-xulruntimes
+$ret = mkdir('dynacase-offline-xulruntimes');
+if( $ret === false ) {
+  print sprintf("Error creating directory 'dynacase-offline-xulruntimes'\n");
+  exit(1);
+}
+
+$cmd = sprintf('tar -C %s -cf - . | tar -C %s -xf -', escapeshellarg($tempdir), 'dynacase-offline-xulruntimes');
+system($cmd, $ret);
+if( $ret !== 0 ) {
+  print sprintf("Error tar -C %s -cf - . | tar -C %s -xf -", escapeshellarg($tempdir), 'dynacase-offline-xulruntimes');
+  exit(1);
+}
+
+// Setup htaccess
+$htaccess = <<<EOF
+<FilesMatch "^.*$>
+        Order Deny,Allow
+        Allow from All
+</FilesMatch>
+EOF;
+$ret = file_put_contents('dynacase-offline-xulruntimes/.htaccess', $htaccess);
+
+// Cleanup tempdir
+$cmd = sprintf('rm -Rf %s', escapeshellarg($tempdir));
+system($cmd , $ret);
+
+exit(0);
+
+?>
