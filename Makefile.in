@@ -4,6 +4,7 @@ RELEASE = @RELEASE@
 utildir = @PUBRULE@
 pubdir = @prefix@
 srcdir = @srcdir@
+appname = @PACKAGE@
 
 export pubdir utildir
 
