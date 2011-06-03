@@ -71,6 +71,7 @@ if( is_dir($xulruntimes_dir) ) {
     print sprintf("Error erasing '%s'.\n", $xulruntimes_dir);
     exit(1);
   }
+  clearstatcache();
 }
 if( ! is_dir($xulruntimes_dir) ) {
   $ret = mkdir($xulruntimes_dir, 0777, true);
@@ -78,6 +79,7 @@ if( ! is_dir($xulruntimes_dir) ) {
     print sprintf("Error creating directory '%s'.", $xulruntimes_dir);
     exit(1);
   }
+  clearstatcache();
 }
 
 // Move temp files into dynacase-offline-xulruntimes
