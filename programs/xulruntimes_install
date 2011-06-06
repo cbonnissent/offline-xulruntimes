@@ -23,7 +23,7 @@ set_include_path(get_include_path().PATH_SEPARATOR.$WIFF_ROOT.PATH_SEPARATOR."$W
 
 include_once('WHAT/Lib.System.php');
 
-$xulruntimes_dir = 'lib/dynacase-offline/xulruntimes';
+$xulruntimes_dir = 'share/offline/xulruntimes';
 
 $xulruntimes_tgz = $argv[1];
 if( $xulruntimes_tgz === null ) {
