@@ -23,6 +23,8 @@ set_include_path(get_include_path().PATH_SEPARATOR.$WIFF_ROOT.PATH_SEPARATOR."$W
 
 include_once('WHAT/Lib.System.php');
 
+$xulruntimes_dir = 'share/offline/xulruntimes';
+
 $xulruntimes_tgz = $argv[1];
 if( $xulruntimes_tgz === null ) {
   print sprintf("Missing XUL Runtimes archive argument\n");
@@ -61,38 +63,41 @@ if( $ret !== 0 ) {
   exit(1);
 }
 
-// Remove old dynacase-offline-xulruntimes
-if( is_dir('dynacase-offline-xulruntimes') ) {
-  $cmd = 'rm -Rf dynacase-offline-xulruntimes';
+// Remove old xulruntimes
+if( is_dir($xulruntimes_dir) ) {
+  $cmd = sprintf('rm -Rf %s', escapeshellarg($xulruntimes_dir));
   system($cmd, $ret);
   if( $ret !== 0 ) {
-    print sprintf("Error erasing 'dynacase-offline-xulruntimes'\n");
+    print sprintf("Error erasing '%s'.\n", $xulruntimes_dir);
     exit(1);
   }
+  clearstatcache();
+}
+if( ! is_dir($xulruntimes_dir) ) {
+  $ret = mkdir($xulruntimes_dir, 0777, true);
+  if( $ret === false ) {
+    print sprintf("Error creating directory '%s'.", $xulruntimes_dir);
+    exit(1);
+  }
+  clearstatcache();
 }
 
 // Move temp files into dynacase-offline-xulruntimes
-$ret = mkdir('dynacase-offline-xulruntimes');
-if( $ret === false ) {
-  print sprintf("Error creating directory 'dynacase-offline-xulruntimes'\n");
-  exit(1);
-}
-
-$cmd = sprintf('tar -C %s -cf - . | tar -C %s -xf -', escapeshellarg($tempdir), 'dynacase-offline-xulruntimes');
+$cmd = sprintf('tar -C %s -cf - . | tar -C %s -xf -', escapeshellarg($tempdir), escapeshellarg($xulruntimes_dir));
 system($cmd, $ret);
 if( $ret !== 0 ) {
-  print sprintf("Error tar -C %s -cf - . | tar -C %s -xf -", escapeshellarg($tempdir), 'dynacase-offline-xulruntimes');
+  print sprintf("Error tar -C %s -cf - . | tar -C %s -xf -", escapeshellarg($tempdir), escapeshellarg($xulruntimes_dir));
   exit(1);
 }
 
 // Setup htaccess
 $htaccess = <<<EOF
-<FilesMatch "^.*$>
+<FilesMatch "^.*$">
         Order Deny,Allow
         Allow from All
 </FilesMatch>
 EOF;
-$ret = file_put_contents('dynacase-offline-xulruntimes/.htaccess', $htaccess);
+$ret = file_put_contents(sprintf("%s/.htaccess", $xulruntimes_dir), $htaccess);
 
 // Cleanup tempdir
 $cmd = sprintf('rm -Rf %s', escapeshellarg($tempdir));
