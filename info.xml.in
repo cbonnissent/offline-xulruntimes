@@ -4,6 +4,7 @@
   <description lang="fr"></description>
 
   <requires>
+    <installer version="1.1.0" comp="ge"/>
   </requires>
 
   <parameters>
