@@ -3,6 +3,10 @@
   <description lang="en"></description>
   <description lang="fr"></description>
 
+  <replaces>
+    <module name="dynacase-offline-xulruntimes" />
+  </replaces>
+
   <requires>
     <installer version="1.1.0" comp="ge"/>
   </requires>
