@@ -8,7 +8,7 @@
   </requires>
 
   <parameters>
-    <param name="xulruntimes_url" label="XUL Runtimes download URL" type="text" default="http://ftp.dynacase.org/third-party/dynacase-offline-xulruntimes-@VERSION@.tar.gz" volatile="yes" />
+    <param name="xulruntimes_url" label="XUL Runtimes download URL" type="text" default="http://ftp.dynacase.org/third-party/dynacase-offline-xulruntimes-@VERSION@.tar.gz" volatile="yes" onupgrade="W" />
   </parameters>
   
   <pre-install>
